@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penerima Donasi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+            height: 80%;
+            overflow-y: auto;
+        }
+        .donation-message {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            word-wrap: break-word;
+        }
+        .donation-list {
+            padding: 0;
+            list-style-type: none;
+        }
+        .donation-list li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Donasi Masuk</h2>
+        <ul class="donation-list" id="donationList">
+            <!-- Pesan donasi akan ditambahkan di sini -->
+        </ul>
+    </div>
+
+    <script>
+        var ws = new WebSocket("ws://localhost:8080/ws");
+
+        ws.onopen = function() {
+            console.log("WebSocket terhubung");
+        };
+
+        ws.onmessage = function(event) {
+            var donation = JSON.parse(event.data);
+
+            // Menampilkan notifikasi donasi
+            var rupiahAmount = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(donation.amount);
+
+            var message = donation.message ? donation.message : "Tidak ada pesan.";
+            var notificationText = `Donasi sebesar ${rupiahAmount} diterima! Pesan: ${message}`;
+
+            // Menambahkan pesan ke dalam daftar donasi
+            var donationItem = document.createElement("li");
+            donationItem.classList.add("donation-message");
+            donationItem.innerText = notificationText;
+            document.getElementById("donationList").appendChild(donationItem);
+
+            // Scroll ke bawah setiap kali donasi baru ditambahkan
+            document.getElementById("donationList").scrollTop = document.getElementById("donationList").scrollHeight;
+        };
+    </script>
+</body>
+</html>

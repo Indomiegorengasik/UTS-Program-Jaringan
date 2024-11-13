@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donasi Pendonor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .donation-message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Donasi untuk Sesama</h2>
+        <input type="number" id="amount" placeholder="Masukkan jumlah donasi (Rupiah)" required>
+        <input type="text" id="donationMessage" placeholder="Pesan untuk penerima" required>
+        <button onclick="sendDonation()">Kirim Donasi</button>
+        <div class="donation-message" id="donationMessageDisplay"></div>
+    </div>
+
+    <script>
+        var ws = new WebSocket("ws://localhost:8080/ws");
+
+        ws.onopen = function() {
+            console.log("WebSocket terhubung");
+        };
+
+        ws.onmessage = function(event) {
+            console.log("Pesan dari server:", event.data);
+        };
+
+        function sendDonation() {
+            var amount = document.getElementById("amount").value;
+            var message = document.getElementById("donationMessage").value;
+
+            // Pastikan amount diubah ke tipe angka dan valid
+            amount = parseInt(amount, 10);
+
+            if (isNaN(amount) || amount <= 0) {
+                alert("Jumlah donasi tidak valid.");
+                return;
+            }
+
+            var donation = {
+                amount: amount,
+                message: message
+            };
+
+            // Menampilkan donasi yang terkirim
+            var rupiahAmount = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+
+            document.getElementById("donationMessageDisplay").innerHTML = `Donasi sebesar ${rupiahAmount} berhasil dikirim!`;
+
+            // Mengirim pesan JSON ke server WebSocket
+            ws.send(JSON.stringify(donation));
+            console.log("Donasi terkirim:", donation);
+        }
+    </script>
+</body>
+</html>
